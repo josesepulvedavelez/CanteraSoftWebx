@@ -1,0 +1,44 @@
+﻿@page "/Cliente/ClienteIndex"
+@using Models
+@inject Services.ClienteService clienteService
+@inject HttpClient Http
+
+<h3>Component1</h3>
+
+@if (_lstClientes == null)
+{
+    <p>Data en null</p>
+}
+else
+{
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@_lstClientes" TItem="ClienteModel" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Nombre" Title="Nombre" Frozen="true" Width="140px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="NitCc" Title="NitCc" Width="140px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Contacto" Title="Contacto" Width="200px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Telefono" Title="Telefono" Width="100px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Celular" Title="Celular" FormatString="{0:d}" Width="140px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Correo" Title="Correo" FormatString="{0:d}" Width="140px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Estado" Title="Estado" Width="200px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="Observaciones" Title="Observaciones" Width="140px" />
+            <RadzenDataGridColumn TItem="ClienteModel" Property="UsuarioLog" Title="UsuarioLog" Width="140px" />
+        </Columns>
+    </RadzenDataGrid>
+}
+
+@code {
+    private IEnumerable<ClienteModel> _lstClientes = null;
+    private ClienteModel _clienteModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SeleccionarTodos();
+    }
+
+    private async Task SeleccionarTodos()
+    {
+        var clientes = await clienteService.SeleccionarTodos();
+        _lstClientes = clientes;
+    }
+}
