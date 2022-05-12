@@ -6,6 +6,7 @@
 @inject DialogService DialogService
 
 <RadzenDialog />
+<RadzenNotification />
 
 <h3>Cliente</h3>
 
@@ -30,8 +31,20 @@ else
                         <RadzenDataGridColumn TItem="ClienteModel" Property="Telefono" Title="Telefono" />
                         <RadzenDataGridColumn TItem="ClienteModel" Property="Celular" Title="Celular" />
                         <RadzenDataGridColumn TItem="ClienteModel" Property="Correo" Title="Correo" />
-                        <RadzenDataGridColumn TItem="ClienteModel" Property="Estado" Title="Estado" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Estado" Title="Estado">
+                            <Template Context="cliente">
+                                @if (cliente.Estado == 0)
+                                {
+                                    <span class="badge bg-light text-dark">Inactivo</span>
+                                }
+                                else if (cliente.Estado == 1)
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
                         <RadzenDataGridColumn TItem="ClienteModel" Property="Observaciones" Title="Observaciones" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="FechaLog" Title="FechaLog" />
                         <RadzenDataGridColumn TItem="ClienteModel" Property="UsuarioLog" Title="UsuarioLog" />
 
                         <RadzenDataGridColumn TItem="ClienteModel" Property="ClienteId" Title="Acciones">
@@ -39,7 +52,7 @@ else
                                 <button type="button" @onclick="(()=>Actualizar(data.ClienteId))" class="btn btn-info">
                                     <span class="oi oi-pencil" aria-hidden="true"></span>
                                 </button>
-                                <button type="button" class="btn btn-danger">
+                                <button type="button" @onclick="(()=> Eliminar(data.ClienteId))" class="btn btn-danger">
                                     <span class="oi oi-circle-x" aria-hidden="true"></span>
                                 </button>
                             </Template>
@@ -58,6 +71,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        DialogService.OnClose += Close;
         await SeleccionarTodos();
     }
 
@@ -65,11 +79,25 @@ else
     {
         var clientes = await Http.GetFromJsonAsync<List<ClienteModel>>("/Api/Cliente/SeleccionarTodos");
         _lstClientes = clientes;
+
+        StateHasChanged();
+    }
+
+    void Close(dynamic result)
+    {
+        Task.Run(() => SeleccionarTodos());
     }
 
     private async Task Actualizar(int id)
     {
-        await DialogService.OpenAsync<ClienteActualizar>($"",
+        await DialogService.OpenAsync<ClienteActualizar>($"Actualizar cliente",
+            new Dictionary<string, object>() { { "Id", id } },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true });
+    }
+
+    private async Task Eliminar(int id)
+    {
+        await DialogService.OpenAsync<ClienteEliminar>($"Eliminar cliente",
             new Dictionary<string, object>() { { "Id", id } },
             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true });
     }

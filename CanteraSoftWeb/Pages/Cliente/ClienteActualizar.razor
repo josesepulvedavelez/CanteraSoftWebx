@@ -11,8 +11,6 @@
 
 <RadzenNotification />
 
-<h3>Actualizar cliente</h3>
-
 @if (_clienteModel == null)
 {
     <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
@@ -35,6 +33,54 @@ else
                     <InputText @bind-Value="_clienteModel.NitCc" class="form-control" />
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Contacto</label>
+                    <InputText @bind-Value="_clienteModel.Contacto" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Telefono</label>
+                    <InputText @bind-Value="_clienteModel.Telefono" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Celular</label>
+                    <InputText @bind-Value="_clienteModel.Celular" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Correo</label>
+                    <InputText @bind-Value="_clienteModel.Correo" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <InputTextArea @bind-Value="_clienteModel.Observaciones" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Estado</label>
+                    <RadzenDropDown Data="@_lstEstados" @bind-Value="_clienteModel.Estado"
+                                    TextProperty="_Estado" ValueProperty="Id" class="w-100"/>
+                </div>
+            </div>
+            <div class="col-md-6">
+
+            </div>
+
+            <br />
+
+            <div class="col-md-12">
+                <center>
+                    <button type="submit" class="btn btn-info">Actualizar</button>
+                </center>
+            </div>
         </div>
     </EditForm>
 }
@@ -48,6 +94,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         _clienteModel = await Http.GetFromJsonAsync<ClienteModel>($"/Api/Cliente/SeleccionarPorId/{Id}");
+        CargarEstados();
     }
 
     private async Task Actualizar()
@@ -82,6 +129,15 @@ else
     void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
+    }
+
+
+    List<Estado> _lstEstados = new List<Estado>();
+
+    private void CargarEstados()
+    {
+        _lstEstados.Add(new Estado { Id = 0, _Estado = "Inactivo" });
+        _lstEstados.Add(new Estado { Id = 1, _Estado = "Activo" });
     }
 
 }
