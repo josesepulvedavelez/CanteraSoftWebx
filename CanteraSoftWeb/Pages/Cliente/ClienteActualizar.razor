@@ -1,5 +1,87 @@
-﻿<h3>Component1</h3>
+﻿@page "/Cliente/ClienteActualizar/{id:int}"
+
+@using Models
+@using Newtonsoft
+@using Newtonsoft.Json
+@using System.Text
+@inject Services.ClienteService clienteService
+@inject HttpClient Http
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenNotification />
+
+<h3>Actualizar cliente</h3>
+
+@if (_clienteModel == null)
+{
+    <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    <EditForm Model="@_clienteModel" OnValidSubmit="@Actualizar">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <InputText @bind-Value="_clienteModel.Nombre" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Nit / Cc</label>
+                    <InputText @bind-Value="_clienteModel.NitCc" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
 
 @code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ClienteModel _clienteModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _clienteModel = await Http.GetFromJsonAsync<ClienteModel>($"/Api/Cliente/SeleccionarPorId/{Id}");
+    }
+
+    private async Task Actualizar()
+    {
+        var json = JsonConvert.SerializeObject(_clienteModel);
+        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+        var httpResponse = await Http.PutAsync("/Api/Cliente/Actualizar", stringContent);
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Actualizar cliente",
+                Detail = "Cliente actualizado exitosamente",
+                Duration = 6000
+            });
+            DialogService.Close(true);
+        }
+        else
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Warning,
+                Summary = "Actualizar cliente",
+                Detail = "Cliente no se actualizo exitosamente",
+                Duration = 6000
+            });
+        }
+    }
+
+    void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+    }
 
 }

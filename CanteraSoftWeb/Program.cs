@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CanteraSoftWeb.Services;
+using Radzen;
 
 namespace CanteraSoftWeb
 {
@@ -18,6 +19,9 @@ namespace CanteraSoftWeb
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
             builder.Services.AddScoped<ClienteService>();
+
+            builder.Services.AddScoped<DialogService>();
+            builder.Services.AddScoped<NotificationService>();
 
             var endPointBackEnd = builder.Configuration["EndPointBackEnd"];
 

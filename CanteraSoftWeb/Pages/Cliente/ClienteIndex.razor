@@ -1,34 +1,59 @@
 ﻿@page "/Cliente/ClienteIndex"
+
 @using Models
 @inject Services.ClienteService clienteService
 @inject HttpClient Http
+@inject DialogService DialogService
 
-<h3>Component1</h3>
+<RadzenDialog />
+
+<h3>Cliente</h3>
 
 @if (_lstClientes == null)
 {
-    <p>Data en null</p>
+    <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 }
 else
 {
-    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="5" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
-                    Data="@_lstClientes" TItem="ClienteModel" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
-        <Columns>
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Nombre" Title="Nombre" Frozen="true" Width="140px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="NitCc" Title="NitCc" Width="140px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Contacto" Title="Contacto" Width="200px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Telefono" Title="Telefono" Width="100px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Celular" Title="Celular" FormatString="{0:d}" Width="140px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Correo" Title="Correo" FormatString="{0:d}" Width="140px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Estado" Title="Estado" Width="200px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="Observaciones" Title="Observaciones" Width="140px" />
-            <RadzenDataGridColumn TItem="ClienteModel" Property="UsuarioLog" Title="UsuarioLog" Width="140px" />
-        </Columns>
-    </RadzenDataGrid>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 text-left">
+                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" PageSize="10" AllowPaging="true" FilterMode="FilterMode.Advanced" AllowSorting="true"
+                                Data="@_lstClientes" TItem="ClienteModel" ColumnWidth="150px"
+                                LogicalFilterOperator="LogicalFilterOperator.Or" EmptyText="No se encontraron registros.">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Nombre" Title="Nombre" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="NitCc" Title="NitCc" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Contacto" Title="Contacto" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Telefono" Title="Telefono" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Celular" Title="Celular" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Correo" Title="Correo" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Estado" Title="Estado" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="Observaciones" Title="Observaciones" />
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="UsuarioLog" Title="UsuarioLog" />
+
+                        <RadzenDataGridColumn TItem="ClienteModel" Property="ClienteId" Title="Acciones">
+                            <Template Context="data">
+                                <button type="button" @onclick="(()=>Actualizar(data.ClienteId))" class="btn btn-info">
+                                    <span class="oi oi-pencil" aria-hidden="true"></span>
+                                </button>
+                                <button type="button" class="btn btn-danger">
+                                    <span class="oi oi-circle-x" aria-hidden="true"></span>
+                                </button>
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
-    private IEnumerable<ClienteModel> _lstClientes = null;
+    private List<ClienteModel> _lstClientes = null;
     private ClienteModel _clienteModel;
 
     protected override async Task OnInitializedAsync()
@@ -38,7 +63,15 @@ else
 
     private async Task SeleccionarTodos()
     {
-        var clientes = await clienteService.SeleccionarTodos();
+        var clientes = await Http.GetFromJsonAsync<List<ClienteModel>>("/Api/Cliente/SeleccionarTodos");
         _lstClientes = clientes;
     }
+
+    private async Task Actualizar(int id)
+    {
+        await DialogService.OpenAsync<ClienteActualizar>($"",
+            new Dictionary<string, object>() { { "Id", id } },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true });
+    }
+
 }
