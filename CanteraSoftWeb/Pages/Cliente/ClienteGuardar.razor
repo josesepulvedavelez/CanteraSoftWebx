@@ -1,5 +1,143 @@
-﻿<h3>Component1</h3>
+﻿
+@page "/Cliente/ClienteGuardar"
+
+@using Models
+@using Newtonsoft
+@using Newtonsoft.Json
+@using System.Text
+@inject Services.ClienteService clienteService
+@inject HttpClient Http
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenNotification />
+
+@if (_clienteModel == null)
+{
+    <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    <EditForm Model="@_clienteModel" OnValidSubmit="@Guardar">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <InputText @bind-Value="_clienteModel.Nombre" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Nit / Cc</label>
+                    <InputText @bind-Value="_clienteModel.NitCc" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Contacto</label>
+                    <InputText @bind-Value="_clienteModel.Contacto" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Telefono</label>
+                    <InputText @bind-Value="_clienteModel.Telefono" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Celular</label>
+                    <InputText @bind-Value="_clienteModel.Celular" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Correo</label>
+                    <InputText @bind-Value="_clienteModel.Correo" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <InputTextArea @bind-Value="_clienteModel.Observaciones" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Estado</label>
+                    <RadzenDropDown Data="@_lstEstados" @bind-Value="_clienteModel.Estado"
+                                    TextProperty="_Estado" ValueProperty="Id" class="w-100" />
+                </div>
+            </div>
+            <div class="col-md-6">
+
+            </div>
+
+            <br />
+
+            <div class="col-md-12">
+                <center>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </center>
+            </div>
+        </div>
+    </EditForm>
+}
 
 @code {
+
+    private ClienteModel _clienteModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargarEstados();
+    }
+
+    private async Task Guardar()
+    {
+        _clienteModel.UsuarioLog = "UserTest";
+
+        var json = JsonConvert.SerializeObject(_clienteModel);
+        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+        var httpResponse = await Http.PostAsync("/Api/Cliente/Guardar", stringContent);
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Guardar cliente",
+                Detail = "Cliente guardado exitosamente",
+                Duration = 6000
+            });
+            DialogService.Close(true);
+        }
+        else
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Warning,
+                Summary = "Guardar cliente",
+                Detail = "Cliente no se guardo exitosamente",
+                Duration = 6000
+            });
+        }
+    }
+
+    void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+    }
+
+
+    List<Estado> _lstEstados = new List<Estado>();
+
+    private void CargarEstados()
+    {
+        _lstEstados.Add(new Estado { Id = 1, _Estado = "Activo" });
+        _lstEstados.Add(new Estado { Id = 0, _Estado = "Inactivo" });
+    }
 
 }

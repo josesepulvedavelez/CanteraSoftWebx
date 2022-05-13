@@ -18,6 +18,8 @@
 }
 else
 {
+    <button type="button" @onclick="(()=> Guardar())" class="btn btn-success">Nuevo cliente</button>
+
     <div class="container">
         <div class="row">
             <div class="col-sm-12 text-left">
@@ -102,4 +104,10 @@ else
             new DialogOptions() { Width = "700px", Height = "570px", Resizable = true });
     }
 
+    private async Task Guardar()
+    {
+        await DialogService.OpenAsync<ClienteGuardar>($"Guardar cliente",
+            new Dictionary<string, object>() { },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true });
+    }
 }
