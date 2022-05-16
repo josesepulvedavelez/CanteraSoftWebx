@@ -18,10 +18,14 @@
     <None Remove="Pages\Cliente\" />
     <None Remove="Services\" />
     <None Remove="Newtonsoft.Json" />
+    <None Remove="Pages\Vehiculo\" />
+    <None Remove="Dto\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Pages\Cliente\" />
     <Folder Include="Services\" />
+    <Folder Include="Pages\Vehiculo\" />
+    <Folder Include="Dto\" />
   </ItemGroup>
 </Project>

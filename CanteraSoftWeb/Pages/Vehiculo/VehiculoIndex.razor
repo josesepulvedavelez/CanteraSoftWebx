@@ -1,0 +1,90 @@
+﻿@page "/Vehiculo/VehiculoIndex"
+
+@using Models
+@using Dto
+@inject Services.ClienteService clienteService
+@inject HttpClient Http
+@inject DialogService DialogService
+
+<RadzenDialog />
+<RadzenNotification />
+
+<h3>Vehiculo</h3>
+
+@if (_lstVehiculos == null)
+{
+    <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 text-left">
+                <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" PageSize="10" AllowPaging="true" FilterMode="FilterMode.Advanced" AllowSorting="true"
+                                Data="@_lstVehiculos" TItem="VehiculoDto" ColumnWidth="150px"
+                                LogicalFilterOperator="LogicalFilterOperator.Or" EmptyText="No se encontraron registros.">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="Placa" Title="Placa" />
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="Mt3" Title="Mt3" />
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="Nombre" Title="Nombre Cliente" />
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="Estado" Title="Estado">
+                            <Template Context="vehiculo">
+                                @if (vehiculo.Estado == 0)
+                                {
+                                    <span class="badge bg-light text-dark">Inactivo</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Activo</span>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="Observaciones" Title="Observaciones" />
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="FechaLog" Title="FechaLog" />
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="UsuarioLog" Title="UsuarioLog" />
+
+                        <RadzenDataGridColumn TItem="VehiculoDto" Property="VehiculoId" Title="Acciones">
+                            <Template Context="data">
+                                <button type="button" @onclick="(()=>Actualizar(data.VehiculoId))" class="btn btn-info">
+                                    <span class="oi oi-pencil" aria-hidden="true"></span>
+                                </button>
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                    </Columns>
+                </RadzenDataGrid>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    List<VehiculoDto> _lstVehiculos = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DialogService.OnClose += Close;
+        await SeleccionarTodos();
+    }
+
+    private async Task SeleccionarTodos()
+    {
+        var vehiculos = await Http.GetFromJsonAsync<List<VehiculoDto>>("/Api/Vehiculo/SeleccionarTodos");
+        _lstVehiculos = vehiculos;
+        StateHasChanged();
+    }
+
+    void Close(dynamic result)
+    {
+        Task.Run(() => SeleccionarTodos());
+    }
+
+    private async Task Actualizar(int id)
+    {
+        await DialogService.OpenAsync<VehiculoActualizar>($"Actualizar vehiculo",
+            new Dictionary<string, object>() { { "Id", id } },
+            new DialogOptions() { Width = "700px", Height = "570px", Resizable = true });
+    }
+}

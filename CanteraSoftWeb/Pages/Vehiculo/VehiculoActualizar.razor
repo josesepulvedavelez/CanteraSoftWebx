@@ -1,0 +1,130 @@
+﻿@page "/Vehiculo/VehiculoActualizar/{id:int}"
+
+@using Models
+@using Dto
+@using Newtonsoft
+@using Newtonsoft.Json
+@using System.Text
+@inject Services.ClienteService clienteService
+@inject HttpClient Http
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+    <RadzenNotification />
+
+@if (_vehiculoDto == null)
+{
+    <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    <EditForm Model="@_vehiculoDto" OnValidSubmit="@Actualizar">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Placa</label>
+                    <InputText @bind-Value="_vehiculoDto.Placa" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Mt3</label>
+                    <InputNumber @bind-Value="_vehiculoDto.Mt3" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Nombre Cliente</label>
+                    <RadzenDropDown Data="@_lstCLienteModel" @bind-Value="_vehiculoDto.ClienteId"
+                                    TextProperty="Nombre" ValueProperty="ClienteId"
+                                    AllowFiltering="true" AllowClear="true" class="w-100" />
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <InputTextArea @bind-Value="_vehiculoDto.Observaciones" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Estado</label>
+                    <RadzenDropDown Data="@_lstEstados" @bind-Value="_vehiculoDto.Estado"
+                                    TextProperty="_Estado" ValueProperty="Id" class="w-100" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label></label>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="col-md-12">
+                <center>
+                    <button type="submit" class="btn btn-info">Actualizar</button>
+                </center>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private VehiculoDto _vehiculoDto;
+    private List<ClienteModel> _lstCLienteModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _vehiculoDto = await Http.GetFromJsonAsync<VehiculoDto>($"/Api/Vehiculo/SeleccionarPorId/{Id}");
+        _lstCLienteModel = await Http.GetFromJsonAsync<List<ClienteModel>>("/Api/Cliente/SeleccionarTodos");
+        CargarEstados();
+    }
+
+    private async Task Actualizar()
+    {
+        var json = JsonConvert.SerializeObject(_vehiculoDto);
+        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+        var httpResponse = await Http.PutAsync("/Api/Vehiculo/Actualizar", stringContent);
+
+        if (httpResponse.IsSuccessStatusCode)
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Actualizar vehiculo",
+                Detail = "Vehiculo actualizado exitosamente",
+                Duration = 6000
+            });
+            DialogService.Close(true);
+        }
+        else
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Warning,
+                Summary = "Actualizar vehiculo",
+                Detail = "Vehiculo no se actualizo exitosamente",
+                Duration = 6000
+            });
+        }
+    }
+
+    void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+    }
+
+
+    List<Estado> _lstEstados = new List<Estado>();
+
+    private void CargarEstados()
+    {
+        _lstEstados.Add(new Estado { Id = 1, _Estado = "Activo" });
+        _lstEstados.Add(new Estado { Id = 0, _Estado = "Inactivo" });
+    }
+}
